@@ -20,4 +20,12 @@ Tourists.prototype.getTouristsList = function() {
     });
 };
 
+Tourists.prototype.getTouristCount = function() {
+   return this._tourists.length;
+};
+
+Tourists.prototype.deleteTourist = function(number) {
+    this._tourists[number] && (this._tourists.splice(number, 1));
+};
+
 module.exports = Tourists;

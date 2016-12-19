@@ -30,10 +30,11 @@ TouristsView.prototype._loadTourists = function() {
 
 TouristsView.prototype._saveTourists = function() {
     fs.writeFile('./Tourist/data.json', JSON.stringify(this._tourists.getTouristsList()));
-}
+};
 
 TouristsView.prototype.addTourist = function() {
     var
+        globalResolve,
         readInterface = readLine.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -42,15 +43,18 @@ TouristsView.prototype.addTourist = function() {
             'Введите имя туриста \n',
             'Введите фамилию туриста \n',
             'Введите отчество туриста \n',
-            'Введите страну или город куда хочет турист, если такой нет, просто намите enter \n',
-            'Введите что хочет посмотреть турист, если такой нет, просто намите enter \n',
-            'Введите чем хочет турист добраться до места \n (автобус, поезд, самолет, теплоход), если такой нет, просто намите enter \n',
-            'Введите минимальную желательную стоимость, если такой нет, просто намите enter \n',
-            'Введите максимальную желательную стоимость, если такой нет, просто намите enter \n'
+            'Введите страну или город куда хочет турист, если такого пожелания нет, просто намите enter \n',
+            'Введите что хочет посмотреть турист, если такого пожелания нет, просто намите enter \n',
+            'Введите чем хочет турист добраться до места \n (автобус, поезд, самолет, теплоход), если такого пожелания нет, просто намите enter \n',
+            'Введите минимальную желательную стоимость, если такого пожелания нет, просто намите enter \n',
+            'Введите максимальную желательную стоимость, если такого пожелания, просто намите enter \n'
         ],
         self = this,
         result = [],
-        i = 0;
+        i = 0,
+        finalPromise = new Promise(function(resolve) {
+            globalResolve = resolve;
+        });
 
     console.log(questions[i]);
     readInterface.prompt();
@@ -58,6 +62,9 @@ TouristsView.prototype.addTourist = function() {
         switch (i) {
             case 5:
                 line = line.toLocaleLowerCase().trim();
+                if (line === '') {
+                    break;
+                }
                 if (line !== 'автобус' && line !== 'поезд' && line !== 'теплоход' && line !== 'самолет') {
                     console.log('Такого транспорта нет, выберете другой');
                     readInterface.prompt();
@@ -95,8 +102,68 @@ TouristsView.prototype.addTourist = function() {
                 maxPrice: result[7]
             });
             self._saveTourists();
+            globalResolve();
         }
-    })
-}
+    });
+
+    return finalPromise;
+};
+
+TouristsView.prototype.askTouristNumber = function() {
+    var
+        self = this,
+        globalResolve,
+        readInterface = readLine.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        }),
+        finalPromise = new Promise(function(resolve) {
+            globalResolve = resolve;
+        });
+
+    this.printTouristsList();
+    console.log('Введите номер туриста');
+
+    readInterface.on('line', function(line) {
+        line = parseInt(line.trim()) - 1;
+        if ((!line && line !== 0) || line < 0 || line >= self._tourists.getTouristCount()) {
+            console.log('Не верный номер туриста, повторите ввод');
+            readInterface.prompt();
+            return;
+        }
+        readInterface.close();
+        globalResolve(line);
+    });
+    readInterface.prompt();
+
+    return finalPromise;
+};
+
+TouristsView.prototype.deleteTourist = function() {
+    var
+        self = this,
+        finalPromise = this.askTouristNumber();
+
+    finalPromise.then(function(number) {
+        self._tourists.deleteTourist(number);
+        self._saveTourists();
+    });
+
+    return finalPromise;
+};
+
+TouristsView.prototype.printTouristsList = function() {
+    this._tourists.getTouristsList().forEach(function(tourist, index) {
+        console.log('Турист номер: ' + (index + 1));
+        console.log('Имя: ' + tourist.firstName);
+        console.log('Фамилия: ' + tourist.secondName);
+        console.log('Отчество: ' + tourist.thirdName);
+        tourist.place && (console.log('Желаемая страна: ' + tourist.place));
+        tourist.showPlace && (console.log('Желаемая достопремечательность: ' + tourist.showPlace));
+        tourist.passage && (console.log('Желаемый транспорт: ' + tourist.passage));
+        tourist.minPrice && (console.log('Минимальный бюджет: ' + tourist.minPrice));
+        tourist.maxPrice && (console.log('Максимальный бюджет: ' + tourist.maxPrice));
+    });
+};
 
 module.exports = TouristsView;

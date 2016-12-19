@@ -20,6 +20,6 @@ Tourist.prototype.getData = function() {
         minPrice: this._minPrice,
         maxPrice: this._maxPrice
     }
-}
+};
 
 module.exports = Tourist;
