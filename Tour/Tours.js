@@ -1,31 +1,36 @@
+'use strict';
+
 var Tour = require('./Tour');
 
-var Tours = function() {
-   this._tours = [];
-};
+var Tours = class {
 
-Tours.prototype.setTours = function(tours) {
-   for (var i = 0; i < tours.length; i++) {
-      this.addTour(tours[i]);
+   constructor() {
+      this._tours = [];
    }
-};
 
-Tours.prototype.addTour = function(tourInfo) {
-   this._tours.push(new Tour(tourInfo));
-};
+   setTours(tours) {
+      for (var i = 0; i < tours.length; i++) {
+         this.addTour(tours[i]);
+      }
+   }
 
-Tours.prototype.getToursList = function() {
-   return this._tours.map(function(tour) {
-      return tour.getData();
-   });
-};
+   addTour(tourInfo) {
+      this._tours.push(new Tour(tourInfo));
+   }
 
-Tours.prototype.getTourCount = function() {
-   return this._tours.length;
-};
+   getToursList() {
+      return this._tours.map(function(tour) {
+         return tour.getData();
+      });
+   }
 
-Tours.prototype.deleteTour = function(number) {
-   this._tours[number] && (this._tours.splice(number, 1));
-};
+   getTourCount() {
+      return this._tours.length;
+   }
+
+   deleteTour(number) {
+      this._tours[number] && (this._tours.splice(number, 1));
+   }
+}
 
 module.exports = Tours;

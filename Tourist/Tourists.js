@@ -1,31 +1,35 @@
+'use strict';
+
 var Tourist = require('./Tourist');
 
-var Tourists = function() {
-    this._tourists = [];
-};
-
-Tourists.prototype.setTourists = function(tourists) {
-    for (var i = 0; i < tourists.length; i++) {
-        this.addTourist(tourists[i]);
+var Tourists = class {
+    constructor() {
+        this._tourists = [];
     }
-};
 
-Tourists.prototype.addTourist = function(touristInfo) {
-    this._tourists.push(new Tourist(touristInfo));
-};
+    setTourists(tourists) {
+        for (var i = 0; i < tourists.length; i++) {
+            this.addTourist(tourists[i]);
+        }
+    }
 
-Tourists.prototype.getTouristsList = function() {
-    return this._tourists.map(function(tourist) {
-        return tourist.getData();
-    });
-};
+    addTourist(touristInfo) {
+        this._tourists.push(new Tourist(touristInfo));
+    }
 
-Tourists.prototype.getTouristCount = function() {
-   return this._tourists.length;
-};
+    getTouristsList() {
+        return this._tourists.map(function(tourist) {
+            return tourist.getData();
+        });
+    }
 
-Tourists.prototype.deleteTourist = function(number) {
-    this._tourists[number] && (this._tourists.splice(number, 1));
-};
+    getTouristCount() {
+        return this._tourists.length;
+    }
+
+    deleteTourist(number) {
+        this._tourists[number] && (this._tourists.splice(number, 1));
+    }
+}
 
 module.exports = Tourists;
