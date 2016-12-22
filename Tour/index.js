@@ -1,5 +1,16 @@
 'use strict';
 
+const TOUR_FIELDS = {
+   PLACE: 0,
+   SHOW_PLACE: 1,
+   DAYS: 2,
+   PASSAGE: 3,
+   PRICE: 4,
+   TOURIST_COUNT: 5
+};
+const ZERO = 0;
+const ONE = 1;
+
 var
     Tours = require('./Tours'),
     fs = require('fs'),
@@ -33,6 +44,64 @@ var ToursView = class {
       fs.writeFile('./Tour/data.json', JSON.stringify(this._tours.getToursList()));
    }
 
+   printSortCountryTour(country) {
+      var
+          self = this,
+          isTourFind = false;
+
+      country = country.trim();
+      this._tours.getToursList().forEach(function(tour, index) {
+         if (tour.place.toLowerCase() === country.toLowerCase()) {
+            self.printTourWithNumber(index);
+            console.log('');
+            isTourFind = true;
+         }
+      });
+      if (!isTourFind) {
+         console.log('Туров не найдено');
+      }
+   }
+
+   printSortShowPlaceTour(showPlace) {
+      var
+          self = this,
+          isTourFind = false;
+
+      showPlace = showPlace.trim();
+      this._tours.getToursList().forEach(function(tour, index) {
+         let
+             tourShowPlaceToLowerCase = tour.showPlace.map(function(place) {
+                return place.toLowerCase();
+             });
+
+         if (tourShowPlaceToLowerCase.indexOf(showPlace.toLowerCase()) + ONE) {
+             self.printTourWithNumber(index);
+             console.log('');
+             isTourFind = true;
+         }
+      });
+      if (!isTourFind) {
+         console.log('Туров не найдено');
+      }
+   }
+
+   printSortPriceTour(price) {
+      var
+          self = this,
+          isTourFind = false;
+
+      this._tours.getToursList().forEach(function(tour, index) {
+         if (tour.price === price) {
+            self.printTourWithNumber(index);
+            console.log('');
+            isTourFind = true;
+         }
+      });
+      if (!isTourFind) {
+         console.log('Туров не найдено');
+      }
+   }
+
    addTour() {
       var
           globalResolve,
@@ -59,7 +128,7 @@ var ToursView = class {
       readInterface.prompt();
       readInterface.on('line', function(line) {
          switch (i) {
-            case 1:
+            case TOUR_FIELDS.SHOW_PLACE:
                line = line.trim().split(/\s*,\s*/);
                if (!line.length) {
                   console.log('Некорректный ввод, попробуйте еще раз');
@@ -67,17 +136,17 @@ var ToursView = class {
                   return;
                }
                break;
-            case 2:
-            case 4:
-            case 5:
+            case TOUR_FIELDS.DAYS:
+            case TOUR_FIELDS.PRICE:
+            case TOUR_FIELDS.TOURIST_COUNT:
                line = parseInt(line.trim());
-               if (!line || line <=0) {
+               if (!line || line <= ZERO) {
                   console.log('Некорректный ввод, попробуйте еще раз');
                   readInterface.prompt();
                   return;
                }
                break;
-            case 3:
+            case TOUR_FIELDS.PASSAGE:
                line = line.toLocaleLowerCase().trim();
                if (line !== 'автобус' && line !== 'поезд' && line !== 'теплоход' && line !== 'самолет') {
                   console.log('Такого транспорта нет, выберете другой');
@@ -94,12 +163,12 @@ var ToursView = class {
          } else {
             readInterface.close();
             self._tours.addTour({
-               place: result[0],
-               showPlace: result[1],
-               days: result[2],
-               passage: result[3],
-               price: result[4],
-               touristsCount: result[5]
+               place: result[TOUR_FIELDS.PLACE].trim(),
+               showPlace: result[TOUR_FIELDS.SHOW_PLACE],
+               days: result[TOUR_FIELDS.DAYS],
+               passage: result[TOUR_FIELDS.PASSAGE],
+               price: result[TOUR_FIELDS.PRICE],
+               touristsCount: result[TOUR_FIELDS.TOURIST_COUNT]
             });
             self._saveTours();
             globalResolve();
@@ -125,9 +194,9 @@ var ToursView = class {
       console.log('Введите номер тура');
 
       readInterface.on('line', function(line) {
-         line = parseInt(line.trim()) - 1;
-         if ((!line && line !== 0) || line < 0 || line >= self._tours.getTourCount()) {
-            console.log('Не верный номер тура, повторите ввод');
+         line = parseInt(line.trim()) - ONE;
+         if ((!line && line !== ZERO) || line < ZERO || line >= self._tours.getTourCount()) {
+            console.log('Неверный номер тура, повторите ввод');
             readInterface.prompt();
             return;
          }
@@ -142,12 +211,7 @@ var ToursView = class {
    printTourWithNumber(tourNumber) {
       var tour = this._tours.getToursList()[tourNumber];
 
-      console.log('Страна: ' + tour.place);
-      console.log('Достопримечательности: ' + tour.showPlace.join(', '));
-      console.log('Количество дней: ' + tour.days);
-      console.log('Вид транспорта: ' + tour.passage);
-      console.log('Цена: ' + tour.price);
-      console.log('Количество туристов: ' + tour.touristsCount);
+      this.printTour(tour);
    }
 
    getTours() {
@@ -171,15 +235,22 @@ var ToursView = class {
       return finalPromise;
    }
 
+   printTour(tour) {
+       console.log('Страна: ' + tour.place);
+       console.log('Достопримечательности: ' + tour.showPlace.join(', '));
+       console.log('Количество дней: ' + tour.days);
+       console.log('Вид транспорта: ' + tour.passage);
+       console.log('Цена: ' + tour.price);
+       console.log('Количество туристов: ' + tour.touristsCount);
+       console.log('');
+   }
+
    printToursList() {
+      var self = this;
+
       this._tours.getToursList().forEach(function(tour, index) {
-         console.log('Тур номер: ' + (index + 1));
-         console.log('Страна: ' + tour.place);
-         console.log('Достопримечательности: ' + tour.showPlace.join(', '));
-         console.log('Количество дней: ' + tour.days);
-         console.log('Вид транспорта: ' + tour.passage);
-         console.log('Цена: ' + tour.price);
-         console.log('Количество туристов: ' + tour.touristsCount);
+         console.log('Тур номер: ' + (index + ONE));
+         self.printTour(tour);
       });
    }
 }

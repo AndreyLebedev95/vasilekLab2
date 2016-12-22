@@ -1,5 +1,7 @@
 'use strict';
 
+const ZERO = 0;
+
 var Tourist = class {
 
     constructor(info) {
@@ -24,6 +26,11 @@ var Tourist = class {
             minPrice: this._minPrice,
             maxPrice: this._maxPrice
         }
+    }
+
+    isHaveSuggestions() {
+        return !!(this._place || this._showPlace || this._passage || this._minPrice || this._maxPrice ||
+            this._maxPrice === ZERO || this._minPrice === ZERO);
     }
 }
 

@@ -1,5 +1,7 @@
 'use strict';
 
+const ONE = 1;
+
 var Tour = require('./Tour');
 
 var Tours = class {
@@ -29,7 +31,7 @@ var Tours = class {
    }
 
    deleteTour(number) {
-      this._tours[number] && (this._tours.splice(number, 1));
+      this._tours[number] && (this._tours.splice(number, ONE));
    }
 }
 

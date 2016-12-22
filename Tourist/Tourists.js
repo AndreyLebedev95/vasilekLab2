@@ -1,5 +1,7 @@
 'use strict';
 
+const ONE = 1;
+
 var Tourist = require('./Tourist');
 
 var Tourists = class {
@@ -23,12 +25,16 @@ var Tourists = class {
         });
     }
 
+    getTourists() {
+        return this._tourists;
+    }
+
     getTouristCount() {
         return this._tourists.length;
     }
 
     deleteTourist(number) {
-        this._tourists[number] && (this._tourists.splice(number, 1));
+        this._tourists[number] && (this._tourists.splice(number, ONE));
     }
 }
 

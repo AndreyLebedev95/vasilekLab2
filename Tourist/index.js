@@ -1,5 +1,18 @@
 'use strict';
 
+const TOURIST_FIELDS = {
+    NAME: 0,
+    F_NAME: 1,
+    S_NAME: 2,
+    PLACE: 3,
+    SHOW_PLACE: 4,
+    PASSAGE: 5,
+    MIN_PRICE: 6,
+    MAX_PRICE: 7
+}
+const ZERO = 0;
+const ONE = 1;
+
 var
     Tourists = require('./Tourists'),
     fs = require('fs'),
@@ -61,7 +74,7 @@ var TouristsView = class {
         readInterface.prompt();
         readInterface.on('line', function(line) {
             switch (i) {
-                case 5:
+                case TOURIST_FIELDS.PASSAGE:
                     line = line.toLocaleLowerCase().trim();
                     if (line === '') {
                         break;
@@ -72,13 +85,13 @@ var TouristsView = class {
                         return;
                     }
                     break;
-                case 6:
-                case 7:
+                case TOURIST_FIELDS.MIN_PRICE:
+                case TOURIST_FIELDS.MAX_PRICE:
                     if (line === '') {
                         break;
                     }
                     line = parseInt(line);
-                    if (!line || line < 0 || (result[6] && result[6] > line)) {
+                    if (!line || line < ZERO || (result[TOURIST_FIELDS.MIN_PRICE] && result[TOURIST_FIELDS.MIN_PRICE] > line)) {
                         console.log('Не допустимое значение цены, введите корректную цену');
                         readInterface.prompt();
                         return;
@@ -93,14 +106,14 @@ var TouristsView = class {
             } else {
                 readInterface.close();
                 self._tourists.addTourist({
-                    firstName: result[0],
-                    secondName: result[1],
-                    thirdName: result[2],
-                    place: result[3],
-                    showPlace: result[4],
-                    passage: result[5],
-                    minPrice: result[6],
-                    maxPrice: result[7]
+                    firstName: result[TOURIST_FIELDS.NAME].trim(),
+                    secondName: result[TOURIST_FIELDS.F_NAME].trim(),
+                    thirdName: result[TOURIST_FIELDS.S_NAME].trim(),
+                    place: result[TOURIST_FIELDS.PLACE].trim(),
+                    showPlace: result[TOURIST_FIELDS.SHOW_PLACE].trim(),
+                    passage: result[TOURIST_FIELDS.PASSAGE],
+                    minPrice: result[TOURIST_FIELDS.MIN_PRICE],
+                    maxPrice: result[TOURIST_FIELDS.MAX_PRICE]
                 });
                 self._saveTourists();
                 globalResolve();
@@ -126,9 +139,9 @@ var TouristsView = class {
         console.log('Введите номер туриста');
 
         readInterface.on('line', function(line) {
-            line = parseInt(line.trim()) - 1;
-            if ((!line && line !== 0) || line < 0 || line >= self._tourists.getTouristCount()) {
-                console.log('Не верный номер туриста, повторите ввод');
+            line = parseInt(line.trim()) - ONE;
+            if ((!line && line !== ZERO) || line < ZERO || line >= self._tourists.getTouristCount()) {
+                console.log('Неверный номер туриста, повторите ввод');
                 readInterface.prompt();
                 return;
             }
@@ -153,6 +166,28 @@ var TouristsView = class {
         return finalPromise;
     }
 
+    getTouristWithSuggestions() {
+        var result = [];
+
+        this._tourists.getTourists().forEach(function(tourist) {
+            if (tourist.isHaveSuggestions()) {
+                result.push(tourist.getData());
+            }
+        });
+        return result;
+    }
+
+    getTouristWithoutSuggestions() {
+        var result = [];
+
+        this._tourists.getTourists().forEach(function(tourist) {
+            if (!tourist.isHaveSuggestions()) {
+                result.push(tourist.getData());
+            }
+        });
+        return result;
+    }
+
     getTouristWithNumber(touristNumber) {
         return this._tourists.getTouristsList()[touristNumber];
     }
@@ -164,6 +199,10 @@ var TouristsView = class {
     printTouristWithNumber(touristNumber) {
         var tourist = this._tourists.getTouristsList()[touristNumber];
 
+        this.printTourist(tourist);
+    }
+
+    printTourist(tourist) {
         console.log('Имя: ' + tourist.firstName);
         console.log('Фамилия: ' + tourist.secondName);
         console.log('Отчество: ' + tourist.thirdName);
@@ -172,19 +211,29 @@ var TouristsView = class {
         tourist.passage && (console.log('Желаемый транспорт: ' + tourist.passage));
         tourist.minPrice && (console.log('Минимальный бюджет: ' + tourist.minPrice));
         tourist.maxPrice && (console.log('Максимальный бюджет: ' + tourist.maxPrice));
+        console.log('');
+    }
+
+    getTouristsWithFNameSort() {
+        var tourists = this.getTourists();
+
+        return tourists.sort(function(el1, el2) {
+            if (el1.secondName > el2.secondName) {
+                return ONE;
+            }
+            if (el1.secondName < el2.secondName) {
+                return -ONE;
+            }
+            return ZERO;
+        });
     }
 
     printTouristsList() {
+        var self = this;
+
         this._tourists.getTouristsList().forEach(function(tourist, index) {
-            console.log('Турист номер: ' + (index + 1));
-            console.log('Имя: ' + tourist.firstName);
-            console.log('Фамилия: ' + tourist.secondName);
-            console.log('Отчество: ' + tourist.thirdName);
-            tourist.place && (console.log('Желаемая страна: ' + tourist.place));
-            tourist.showPlace && (console.log('Желаемая достопремечательность: ' + tourist.showPlace));
-            tourist.passage && (console.log('Желаемый транспорт: ' + tourist.passage));
-            tourist.minPrice && (console.log('Минимальный бюджет: ' + tourist.minPrice));
-            tourist.maxPrice && (console.log('Максимальный бюджет: ' + tourist.maxPrice));
+            console.log('Турист номер: ' + (index + ONE));
+            self.printTourist(tourist);
         });
     }
 }

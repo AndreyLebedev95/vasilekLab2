@@ -13,9 +13,7 @@ var Tour = class {
    getData() {
       return {
          place: this._place,
-         showPlace: this._showPlace,
          days: this._days,
-         passage: this._passage,
          showPlace: this._showPlace,
          passage: this._passage,
          price: this._price,
